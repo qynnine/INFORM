@@ -7,7 +7,7 @@ public class UrlDownloadTest {
 
     @Test
     public void testFileDownload() throws Exception {
-        String fAddress = "https://github.com/qynnine/INFORM/archive/15b69e3c52d4b5b973ce5334540b6dc832cfb98c.zip";
+        String fAddress = "https://github.com/ramblas/INFORM/archive/master.zip";
         String destinationDir = "data/demo/";
 
         UrlDownload.fileDownload(fAddress, destinationDir);
