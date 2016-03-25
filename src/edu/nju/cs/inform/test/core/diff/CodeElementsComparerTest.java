@@ -1,24 +1,25 @@
 package edu.nju.cs.inform.test.core.diff;
 
 import edu.nju.cs.inform.core.diff.CodeElementsComparer;
-import edu.nju.cs.inform.core.type.ArtifactsCollection;
+import edu.nju.cs.inform.core.type.CodeElementChange;
 import org.junit.Test;
+
+import java.util.Set;
 
 public class CodeElementsComparerTest {
 
     @Test
     public void testDiff() throws Exception {
-        String newVersionCodePath = "data/code sample/AquaLush_Change4";
-        String oldVersionCodePath = "data/code sample/AquaLush_Change3";
-
-//        String newVersionCodePath = "data/code sample/iTrust_v11";
-//        String oldVersionCodePath = "data/code sample/iTrust_v10";
+        String newVersionCodePath = "data/sample/AquaLush_Change4";
+        String oldVersionCodePath = "data/sample/AquaLush_Change3";
 
         CodeElementsComparer comparer = new CodeElementsComparer(newVersionCodePath, oldVersionCodePath);
         comparer.diff();
 
-        ArtifactsCollection changeDescriptionCollection = comparer.getChangeDescriptionCollection();
-
-        System.out.println(changeDescriptionCollection.size());
+        System.out.println("-----------------Code Elements Diff-----------------");
+        Set<CodeElementChange> codeElementChangeList = comparer.getCodeElementChangesList();
+        for (CodeElementChange elementChange : codeElementChangeList) {
+            System.out.println(elementChange.getElementName() + " " + elementChange.getElementType() + " " + elementChange.getChangeType());
+        }
     }
 }

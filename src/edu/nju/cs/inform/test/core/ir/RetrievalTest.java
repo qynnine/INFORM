@@ -1,19 +1,19 @@
 package edu.nju.cs.inform.test.core.ir;
 
 import edu.nju.cs.inform.core.diff.CodeElementsComparer;
-import edu.nju.cs.inform.core.ir.IR;
 import edu.nju.cs.inform.core.ir.IRModelConst;
-import edu.nju.cs.inform.core.preprocess.ArtifactPreprocessor;
-import edu.nju.cs.inform.core.type.Artifact;
+import edu.nju.cs.inform.core.ir.Retrieval;
 import edu.nju.cs.inform.core.type.ArtifactsCollection;
 import edu.nju.cs.inform.core.type.SimilarityMatrix;
 import edu.nju.cs.inform.io.ArtifactsReader;
 import org.junit.Test;
 
-public class IRTest {
+import java.util.Map;
+
+public class RetrievalTest {
 
     @Test
-    public void testCompute() throws Exception {
+    public void testTracing() throws Exception {
         String newVersionCodePath = "data/sample/AquaLush_Change4";
         String oldVersionCodePath = "data/sample/AquaLush_Change3";
         String requirementPath = "data/sample/AquaLush_Requirement";
@@ -21,20 +21,19 @@ public class IRTest {
         CodeElementsComparer comparer = new CodeElementsComparer(newVersionCodePath, oldVersionCodePath);
         comparer.diff();
 
+        // get change description from code changes
         ArtifactsCollection changeDescriptionCollection = comparer.getChangeDescriptionCollection();
         ArtifactsCollection requirementCollection = ArtifactsReader.getCollections(requirementPath, ".txt");
 
-        for (String change : changeDescriptionCollection.keySet()) {
-            Artifact artifact = changeDescriptionCollection.get(change);
-            artifact.text = ArtifactPreprocessor.handleJavaFile(artifact.text);
-        }
+        // retrieval change description to requirement
+        Retrieval retrieval = new Retrieval(changeDescriptionCollection, requirementCollection, IRModelConst.VSM);
+        retrieval.tracing();
 
-        for (String requirement : requirementCollection.keySet()) {
-            Artifact artifact = requirementCollection.get(requirement);
-            artifact.text = ArtifactPreprocessor.handlePureTextFile(artifact.text);
-        }
 
-        SimilarityMatrix similarityMatrix = IR.compute(changeDescriptionCollection, requirementCollection, IRModelConst.VSM);
+        SimilarityMatrix similarityMatrix = retrieval.getSimilarityMatrix();
+        Map<String, Double> candidatedOutdatedRequirementsRank = retrieval.getCandidateOutdatedRequirementsRank();
+
         System.out.println(similarityMatrix );
+        System.out.println(candidatedOutdatedRequirementsRank);
     }
 }
