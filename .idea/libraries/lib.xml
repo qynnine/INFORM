@@ -1,10 +1,23 @@
 <component name="libraryTable">
   <library name="lib">
     <CLASSES>
-      <root url="file://$PROJECT_DIR$/lib" />
+      <root url="jar://$PROJECT_DIR$/lib/zip4j_1.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.core.resources_3.7.100.v20110510-0712.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.jface-3.6.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.equinox.preferences_3.4.0.v20110502.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.core.commands_3.6.100.v20140528-1422.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.core.runtime_3.7.0.v20110110.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.text_3.5.100.v20110505-0800.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.equinox.common_3.6.0.v20110523.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.ui_3.7.0.I20110602-0100.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.jdt.core_3.7.0.v_B61.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/swt-debug.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.osgi_3.7.0.v20110613.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/swt.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/org.eclipse.core.jobs_3.5.100.v20110404.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
-    <jarDirectory url="file://$PROJECT_DIR$/lib" recursive="false" />
   </library>
 </component>

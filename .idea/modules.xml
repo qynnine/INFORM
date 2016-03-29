@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/INFORM.iml" filepath="$PROJECT_DIR$/INFORM.iml" />
+      <module fileurl="file://$PROJECT_DIR$/data/demo/INFORM-15b69e3c52d4b5b973ce5334540b6dc832cfb98c/INFORM-15b69e3c52d4b5b973ce5334540b6dc832cfb98c.iml" filepath="$PROJECT_DIR$/data/demo/INFORM-15b69e3c52d4b5b973ce5334540b6dc832cfb98c/INFORM-15b69e3c52d4b5b973ce5334540b6dc832cfb98c.iml" />
+      <module fileurl="file://$PROJECT_DIR$/data/sample/sample.iml" filepath="$PROJECT_DIR$/data/sample/sample.iml" />
     </modules>
   </component>
 </project>
