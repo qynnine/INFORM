@@ -34,6 +34,9 @@ public class RetrievalTest {
         Map<String, Double> candidatedOutdatedRequirementsRank = retrieval.getCandidateOutdatedRequirementsRank();
 
         System.out.println(similarityMatrix );
+        /*for(Map.Entry<String,Double> map:candidatedOutdatedRequirementsRank.entrySet()){
+            System.out.println(map.getKey()+"\t"+map.getValue());
+        }*/
         System.out.println(candidatedOutdatedRequirementsRank);
     }
 }

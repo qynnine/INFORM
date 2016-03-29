@@ -1,5 +1,9 @@
 package edu.nju.cs.inform.gui;
 
+import edu.nju.cs.inform.core.diff.CodeElementsComparer;
+import edu.nju.cs.inform.core.type.Artifact;
+import edu.nju.cs.inform.core.type.CodeElementChange;
+import edu.nju.cs.inform.util._;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
@@ -14,8 +18,14 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.graphics.Point;
 
 import java.awt.*;
+import java.io.File;
+import java.util.Objects;
+import java.util.Set;
+
+import static edu.nju.cs.inform.gui.ProgressDialog.CodeElementChanges;
 
 //import org.eclipse.swt.custom.*;
 
@@ -23,9 +33,6 @@ import java.awt.*;
  * Created by ruicosta on 2016/3/21.
  */
 public class Retro {
-    static Dimension screen_size = Toolkit.getDefaultToolkit().getScreenSize();
-    final static int screen_width = screen_size.width;
-    final static int screen_height = screen_size.height;
 
     static Display display;
     static Shell entrance;
@@ -37,6 +44,9 @@ public class Retro {
     static String call_old_code_location;
     static String call_new_code_location;
     static Table codeElementsTable;
+    static Table requirementElementsTable;
+    static Text codeText;
+    static Text requirementText;
     static String prevPath = "";
     static int newCount;
 
@@ -69,8 +79,8 @@ public class Retro {
        /* entrance.setImage(new Image(entrance.getDisplay(), new ImageData(
                 "src\\images\\icon_small.gif")));*/
 
-        int entrance_width = screen_width / 2;
-        int entrance_height = screen_height / 2;
+        int entrance_width = LayoutConstants.screenWidth / 2;
+        int entrance_height = LayoutConstants.screenHeight / 2;
         entrance.setBounds(entrance_width / 2, entrance_height / 2,
                 entrance_width, entrance_height);
         entrance.addShellListener(new ShellAdapter() {
@@ -89,10 +99,11 @@ public class Retro {
         layout.verticalSpacing = height / 24;
         entrance.setLayout(layout);
 
-        Font font = new Font(entrance.getDisplay(), "Î¢ÈíÑÅºÚ", 14, SWT.BOLD);
-        addCompositeWithoutButton(width, height, font);
-        addCompositeWithSingleButton(width, height, font);
+
+        addCompositeWithoutButton(width, height, boldFont);
+        addCompositeWithSingleButton(width, height, boldFont);
         addCompositeWithDoubleButton(width, height);
+
     }
 
     private static void addCompositeWithoutButton(int width, int height,
@@ -297,190 +308,71 @@ public class Retro {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 super.widgetSelected(e);
-                entrance.setVisible(false);
-                retro.open();
-                retro.forceFocus();
+                if(Retro.call_new_code_location!=null&&Retro.call_old_code_location!=null&&Retro.call_requirement_location!=null) {
+                    entrance.setVisible(false);
+                    retro.open();
+                    retro.forceFocus();
+                    final CodeElementsComparer comparer = new CodeElementsComparer(Retro.call_new_code_location, Retro.call_old_code_location);
+                    comparer.diff();
+                    final Set<CodeElementChange> codeElementChangesList = comparer.getCodeElementChangesList();
+                    CodeElementChanges = new TableItem[codeElementChangesList.size()];
+                    int i = 0;
+                    for (CodeElementChange elementChange : codeElementChangesList) {
+                        TableItem item = new TableItem(Retro.codeElementsTable, 0);
+                        String[] codeInfo = {"" + ++i, elementChange.getElementName(), "" + elementChange.getElementType(), "" + elementChange.getChangeType()};
+                        item.setText(codeInfo);
+                        CodeElementChanges[i - 1] = item;
+                    }
+                }
+
             }
         });
     }
 
     private static void initRetro() {
-        retro = new Shell(display, SWT.BORDER | SWT.MIN);
+        retro = new Shell(display, SWT.BORDER | SWT.MIN|SWT.MAX|SWT.RESIZE);
        /* Image icon = new Image(entrance.getDisplay(), new ImageData(
                 "src\\images\\icon_small.gif"));
         retro.setImage(icon);*/
         retro.setText("Main");
-        retro.setMaximized(true);// Ä¬ÈÏ´°¿Ú×î´ó»¯
+        retro.setMaximized(true);
+        retro.setSize(LayoutConstants.screenWidth,LayoutConstants.screenHeight);
+        retro.setMinimumSize(LayoutConstants.retroMinSizeWidth, LayoutConstants.retroMinSizeHeight);
 
-        Menu menuBar = new Menu(retro, SWT.BAR);// Ìí¼Ó²Ëµ¥À¸
+        Menu menuBar = new Menu(retro, SWT.BAR);
+        fillInMenuBar(menuBar);
 
-        MenuItem fileMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-        fileMenuHeader.setText("&File");
-        Menu fileMenu = new Menu(retro, SWT.DROP_DOWN);
-        fileMenuHeader.setMenu(fileMenu);
-        MenuItem newProjectItem = new MenuItem(fileMenu, SWT.PUSH);
-        newProjectItem.setText("Start New Project");
-        MenuItem loadProjectItem = new MenuItem(fileMenu, SWT.PUSH);
-        loadProjectItem.setText("Load Project     ");
-        MenuItem loadRTMItem = new MenuItem(fileMenu, SWT.PUSH);
-        loadRTMItem.setText("Load RTM              ");
-        MenuItem saveProjectItem = new MenuItem(fileMenu, SWT.PUSH);
-        saveProjectItem.setText("Save.....              ");
-        MenuItem closeProjectItem = new MenuItem(fileMenu, SWT.PUSH);
-        closeProjectItem.setText("Close Current Project");
-        @SuppressWarnings("unused")
-        MenuItem seperator = new MenuItem(fileMenu, SWT.SEPARATOR);
-        MenuItem exit = new MenuItem(fileMenu, SWT.PUSH);
-        exit.setText("Exit");
-        exit.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                super.widgetSelected(e);
-                retro.close();
-            }
-        });
+        int everyWidth = LayoutConstants.screenWidth / 2 - LayoutConstants.screenWidth / 25;
+        final GridLayout retroLayout = new GridLayout(2, false);
+        setRetroLayout(retroLayout,LayoutConstants.screenWidth);
 
-        MenuItem actionMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-        actionMenuHeader.setText("&Action");
-        Menu actionMenu = new Menu(retro, SWT.DROP_DOWN);
-        actionMenuHeader.setMenu(actionMenu);
+        final Label codeElementsLabel = addLabel(retro,LayoutConstants.screenHeight, everyWidth, "Differing Code Elements", boldFont);
+        final Label requirementElementsLabel = addLabel(retro,LayoutConstants.screenHeight, everyWidth, "Requirement Elements", boldFont);
 
-        MenuItem optionsMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-        optionsMenuHeader.setText("&Options");
-        Menu optionsMenu = new Menu(retro, SWT.DROP_DOWN);
-        optionsMenuHeader.setMenu(optionsMenu);
+        int tableHeight = LayoutConstants.screenHeight / 4;
+        codeElementsTable = fillInElementsTable(new String[]{"No","Id","Type","Changed"},
+                new int[]{everyWidth / 20, everyWidth / 2,everyWidth / 10, everyWidth * 2 / 5},
+                everyWidth, tableHeight, normalFont, "Left DoubleClick on Tableitem to Show Call Paragraph");
+        requirementElementsTable = fillInElementsTable(new String[]{"No","Score","Id","Status"},
+                new int[]{everyWidth / 20, everyWidth / 2, everyWidth / 10, everyWidth * 2 / 5},
+                everyWidth, tableHeight, normalFont, "Left DoubleClick on Status Column to Mark the State of Requirement");
 
-        MenuItem dataMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-        dataMenuHeader.setText("&Data");
-        Menu dataMenu = new Menu(retro, SWT.DROP_DOWN);
-        dataMenuHeader.setMenu(dataMenu);
-        MenuItem importItem = new MenuItem(dataMenu, SWT.PUSH);
-        importItem.setText("Import");
-        importItem.setEnabled(false);
-        MenuItem exportItem = new MenuItem(dataMenu, SWT.PUSH);
-        exportItem.setText("Export");
-        exportItem.setEnabled(false);
+        final Label codeTextLabel = addLabel(retro,LayoutConstants.screenHeight,everyWidth,"Code Text",boldFont);
+        final Label requirementTextLabel = addLabel(retro,LayoutConstants.screenHeight,everyWidth,"Requirements Text",boldFont);
 
-        MenuItem helpMenuHeader = new MenuItem(menuBar, SWT.CASCADE);
-        helpMenuHeader.setText("&Help");
-        Menu helpMenu = new Menu(retro, SWT.DROP_DOWN);
-        helpMenuHeader.setMenu(helpMenu);
-        MenuItem helpItem = new MenuItem(helpMenu, SWT.PUSH);
-        helpItem.setText("Help");
-        MenuItem aboutItem = new MenuItem(helpMenu, SWT.PUSH);
-        aboutItem.setText("Export");
+        int textHeight = LayoutConstants.screenHeight / 3;
+        codeText = addText(everyWidth, textHeight);
+        requirementText = addText(everyWidth, textHeight);
 
-        //Ò³Ãæ²¼¾Ö
-        int everyWidth = screen_width / 2 - screen_width / 25;
-        GridLayout retroLayout = new GridLayout(2,false);
-        retroLayout.marginTop = screen_height / 80;
-        retroLayout.marginLeft = screen_width / 100;
-        retroLayout.horizontalSpacing = screen_width / 50;
-        Label codeElementsTitle = new Label(retro,SWT.VERTICAL|SWT.BEGINNING);
-        codeElementsTitle.setText("Differing Code Elements");
-        codeElementsTitle.setFont(boldFont);
-        GridData codeElementsTitleLayout = new GridData();
-        codeElementsTitleLayout.widthHint = everyWidth;
-        codeElementsTitle.setLayoutData(codeElementsTitleLayout);
-
-        Label requirementElementsTitle = new Label(retro,SWT.VERTICAL|SWT.BEGINNING);
-        requirementElementsTitle.setText("Requirement Elements");
-        requirementElementsTitle.setFont(boldFont);
-        GridData requirementElementsTitleLayout = new GridData();
-        requirementElementsTitleLayout.widthHint = everyWidth;
-        requirementElementsTitle.setLayoutData(requirementElementsTitleLayout);
-
-        //Code Elements±í¸ñ
-        int tableHeight = screen_height / 5;
-        codeElementsTable = new Table(retro,SWT.IGNORE);
-        codeElementsTable.setLinesVisible(true);
-        codeElementsTable.setHeaderVisible(true);
-        codeElementsTable.setFont(normalFont);
-        codeElementsTable.setToolTipText("Right Click on Tableitem to Show Call Paragraph");
-        TableColumn codeNo = new TableColumn(codeElementsTable, SWT.CASCADE);
-        codeNo.setText("No");
-        codeNo.setAlignment(SWT.CENTER);
-        codeNo.setWidth(everyWidth / 20);
-        TableColumn codeId = new TableColumn(codeElementsTable, SWT.CASCADE);
-        codeId.setText("Id");
-        codeId.setAlignment(SWT.LEFT);
-        codeId.setWidth(everyWidth / 2);
-        TableColumn codeType = new TableColumn(codeElementsTable,SWT.CASCADE);
-        codeType.setText("Type");
-        codeType.setAlignment(SWT.CENTER);
-        codeType.setWidth(everyWidth / 10);
-        TableColumn codeChanged = new TableColumn(codeElementsTable,SWT.CASCADE);
-        codeChanged.setText("Changed");
-        codeChanged.setAlignment(SWT.CENTER);
-        codeChanged.setWidth(everyWidth *  2/ 5);
-        GridData codeElementsTableLayout = new GridData();
-        codeElementsTableLayout.widthHint = everyWidth;
-        codeElementsTableLayout.heightHint = tableHeight;
-        codeElementsTable.setLayoutData(codeElementsTableLayout);
-
-
-
-        //Requirement Elements±í¸ñ
-        final Table requirementElementsTable = new Table(retro,SWT.IGNORE);
-        requirementElementsTable.setLinesVisible(true);
-        requirementElementsTable.setHeaderVisible(true);
-        requirementElementsTable.setFont(normalFont);
-        requirementElementsTable.setToolTipText("Right Click on Status Column to Mark the State of Requirement");
-        TableColumn requirementNo = new TableColumn(requirementElementsTable, SWT.CASCADE);
-        requirementNo.setText("No");
-        requirementNo.setAlignment(SWT.CENTER);
-        requirementNo.setWidth(everyWidth / 20);
-        TableColumn requirementScore = new TableColumn(requirementElementsTable,SWT.CASCADE);
-        requirementScore.setText("Score");
-        requirementScore.setAlignment(SWT.CENTER);
-        requirementScore.setWidth(everyWidth / 10);
-        TableColumn requirementId = new TableColumn(requirementElementsTable,SWT.CASCADE);
-        requirementId.setText("Id");
-        requirementId.setAlignment(SWT.CENTER);
-        requirementId.setWidth(everyWidth / 2);
-        TableColumn requirementStatus = new TableColumn(requirementElementsTable, SWT.CASCADE);
-        requirementStatus.setText("Status");
-        requirementStatus.setAlignment(SWT.CENTER);
-        requirementStatus.setWidth(everyWidth * 2  / 5);
-        GridData requirementElementsTableLayout = new GridData();
-        requirementElementsTableLayout.widthHint = everyWidth;
-        requirementElementsTableLayout.heightHint = tableHeight;
-        requirementElementsTable.setLayoutData(requirementElementsTableLayout);
-
-        Label codeTextLabel = new Label(retro,SWT.VIRTUAL|SWT.BEGINNING);
-        codeTextLabel.setText("Code Text");
-        codeTextLabel.setFont(boldFont);
-        GridData codeTextLabelLayout = new GridData();
-        codeTextLabelLayout.verticalIndent = screen_height / 30;
-        codeTextLabelLayout.widthHint = everyWidth;
-        codeTextLabel.setLayoutData(codeTextLabelLayout);
-        Label requirementTextLabel = new Label(retro,SWT.VIRTUAL|SWT.BEGINNING);
-        requirementTextLabel.setText("Requirements Text");
-        requirementTextLabel.setFont(boldFont);
-        GridData requirementTextLayoutLabel = new GridData();
-        requirementTextLayoutLabel.verticalIndent = screen_height / 30;
-        requirementTextLayoutLabel.widthHint = everyWidth;
-        requirementTextLabel.setLayoutData(requirementTextLayoutLabel);
-
-        //ÎÄ±¾¿ò
-        int textHeight = screen_height / 3;
-        final Text codeText = new Text(retro,SWT.V_SCROLL|SWT.BORDER);
-        //codeText.setText("Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!");
-        GridData codeTextLayout = new GridData();
-        codeTextLayout.heightHint = textHeight;
-        codeTextLayout.widthHint = everyWidth - screen_width / 30;
-        codeText.setLayoutData(codeTextLayout);
-        Text requirementText = new Text(retro,SWT.V_SCROLL|SWT.BORDER);
-        requirementText.setText("Hello World!Hello World!Hello World!Hello World!Hello World!Hello World!");
-        GridData requirementTextLayout = new GridData();
-        requirementTextLayout.heightHint = textHeight;
-        requirementTextLayout.widthHint = everyWidth - screen_width / 30;
-        requirementText.setLayoutData(requirementTextLayout);
+        //Retrieve
+        final Button retrieve = new Button(retro, SWT.BUTTON1);
+        retrieve.setText("Retrieve");
+        setRetrieveButtonLayout(retrieve,LayoutConstants.screenWidth,LayoutConstants.screenHeight);
         //Table监听事件
-        codeElementsTable.addListener(SWT.MouseDown, new Listener() {
+        codeElementsTable.addListener(SWT.MouseDoubleClick, new Listener() {
             @Override
             public void handleEvent(Event event) {
-                if(event.button==3){
+                if(event.button==1){
                     TableItem[] itemList =codeElementsTable.getItems();
                     int listHaveChouse = codeElementsTable.getSelectionIndex();
                     String text=itemList[listHaveChouse].getText(1)+"("+itemList[listHaveChouse].getText(2)+")"+itemList[listHaveChouse].getText(3);
@@ -490,39 +382,43 @@ public class Retro {
 
         });
 
-        //Retrieve
-        final Button retrieve = new Button(retro,SWT.BUTTON1);
-        retrieve.setText("Retrieve");
-        GridData retrieveLayout = new GridData();
-        retrieveLayout.verticalIndent = screen_height / 30;
-        retrieveLayout.heightHint = screen_height / 25;
-        retrieveLayout.widthHint = screen_width / 15;
-        retrieve.setLayoutData(retrieveLayout);
+
         retrieve.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 super.widgetSelected(e);
                 new ProgressDialog(retro).open();
                 retrieve.setEnabled(false);
-                /*
-                CodeElementsComparer comparer = new CodeElementsComparer(call_new_code_location, call_old_code_location);
-                comparer.diff();
-                Set<CodeElementChange> codeElementChangeList = comparer.getCodeElementChangesList();
-                int index=1;
-                for (CodeElementChange elementChange : codeElementChangeList) {
-                    TableItem Item=new TableItem(codeElementsTable,SWT.NULL);
-                    Item.setText(0,String.valueOf(index));
-                    Item.setText(1,elementChange.getElementName());
-                    Item.setText(2, String.valueOf(elementChange.getElementType()));
-                    Item.setText(3, String.valueOf(elementChange.getChangeType()));
-                    index++;
-                }*/
-
             }
         });
 
         retro.setLayout(retroLayout);
         retro.setMenuBar(menuBar);
+        retro.addControlListener(new ControlAdapter() {
+
+            @Override
+            public void controlResized(ControlEvent controlEvent) {
+                Point size = retro.getSize();
+                int width = size.x;
+                int height = size.y;
+                setRetroLayout(retroLayout,width);
+                int everyWidth = width / 2 - width / 25;
+                setLabelLayout(codeElementsLabel,height,everyWidth);
+                setLabelLayout(requirementElementsLabel,height,everyWidth);
+                setLabelLayout(codeTextLabel,height,everyWidth);
+                setLabelLayout(requirementTextLabel,height,everyWidth);
+                int tableHeight = height / 4;
+                setTableLayout(codeElementsTable,new int[]{everyWidth / 20, everyWidth / 2,everyWidth / 10, everyWidth * 2 / 5},
+                        everyWidth,tableHeight);
+                setTableLayout(requirementElementsTable,
+                        new int[]{everyWidth / 20, everyWidth / 10, everyWidth / 2, everyWidth * 2 / 5},
+                        everyWidth,tableHeight);
+                int textHeight = height / 3;
+                setTextLayout(codeText,everyWidth - width / 30,textHeight);
+                setTextLayout(requirementText,everyWidth - width / 30,textHeight);
+                setRetrieveButtonLayout(retrieve,width,height);
+            }
+        });
         retro.addShellListener(new ShellAdapter() {
             @Override
             public void shellClosed(ShellEvent e) {
@@ -530,5 +426,116 @@ public class Retro {
                 retro.dispose();
             }
         });
+    }
+
+    private static void setRetroLayout(final GridLayout layout,int width){
+        layout.marginLeft = width / 200;
+        layout.horizontalSpacing = width / 50;
+    }
+
+    private static Menu addMenu(Menu menuBar,String menuText,String[] menuItemTexts){
+        MenuItem menuHeader = new MenuItem(menuBar, SWT.CASCADE);
+        menuHeader.setText(menuText);
+        Menu menu = new Menu(retro, SWT.DROP_DOWN);
+        menuHeader.setMenu(menu);
+        if(menuItemTexts != null){
+            for (int i = 0;i < menuItemTexts.length;i++){
+                if(menuItemTexts[i] != null){
+                    MenuItem item = new MenuItem(menu,SWT.PUSH);
+                    item.setText(menuItemTexts[i]);
+                }else{
+                    @SuppressWarnings("unused")
+                    MenuItem seperator = new MenuItem(menu, SWT.SEPARATOR);
+                }
+            }
+        }
+
+        return menu;
+    }
+
+    private static void fillInMenuBar(Menu menuBar) {
+
+        Menu fileMenu = addMenu(menuBar,"&File",new String[]{"Start New Project","Load Project     ",
+                "Load RTM              ","Save.....              ","Close Current Project",null,"Exit"});
+        int exitItemIndex = 6;
+        fileMenu.getItem(exitItemIndex).addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent selectionEvent) {
+                retro.close();
+            }
+        });
+
+        Menu actionMenu = addMenu(menuBar,"&Action",null);
+        Menu optionsMenu = addMenu(menuBar,"&Options",null);
+
+        Menu dataMenu = addMenu(menuBar,"&Data",new String[]{"Import","Export"});
+        int importItemIndex = 0,exportItemIndex = 1;
+        dataMenu.getItem(importItemIndex).setEnabled(false);
+        dataMenu.getItem(exportItemIndex).setEnabled(false);
+
+        Menu helpMenu = addMenu(menuBar,"&Help",new String[]{"Help","Export"});
+    }
+
+    private static Label addLabel(final Shell retro,int height, int everyWidth, String s, Font boldFont) {
+        Label label = new Label(retro, SWT.VERTICAL | SWT.BEGINNING);
+        label.setText(s);
+        label.setFont(boldFont);
+        setLabelLayout(label,height,everyWidth);
+        return label;
+    }
+
+    private static void setLabelLayout(Label label,int height,int everyWidth){
+        GridData layout = new GridData();
+        layout.widthHint = everyWidth;
+        layout.verticalIndent = height / 30;
+        label.setLayoutData(layout);
+    }
+
+    private static Table fillInElementsTable(String[] s, int[] w,int everyWidth, int tableHeight, Font normalFont, String tip) {
+        Table table = new Table(retro, SWT.IGNORE);
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+        table.setFont(normalFont);
+        table.setToolTipText(tip);
+        for(int i = 0;i < s.length;i++){
+            TableColumn column = new TableColumn(table, SWT.CASCADE);
+            column.setText(s[i]);
+            column.setAlignment(SWT.LEFT);
+            column.setWidth(w[i]);
+        }
+        setTableLayout(table,w,everyWidth,tableHeight);
+
+        return table;
+    }
+
+    private static void setTableLayout(final Table table,int[] w,int width,int height){
+        for(int i = 0;i < w.length;i++){
+            table.getColumn(i).setWidth(w[i]);
+        }
+        GridData layout = new GridData();
+        layout.widthHint = width;
+        layout.heightHint = height;
+        table.setLayoutData(layout);
+    }
+
+    private static Text addText(int everyWidth, int textHeight) {
+        Text text = new Text(retro, SWT.V_SCROLL | SWT.BORDER);
+        text.setText("");
+        setTextLayout(text,everyWidth - LayoutConstants.screenWidth / 30,textHeight);
+        return text;
+    }
+
+    private static void setTextLayout(final Text text,int width,int height){
+        GridData layout = new GridData();
+        layout.heightHint = height;
+        layout.widthHint = width;
+        text.setLayoutData(layout);
+    }
+    private static void setRetrieveButtonLayout(final Button retrieve,int width,int height){
+        GridData retrieveLayout = new GridData();
+        retrieveLayout.verticalIndent = height / 100;
+        retrieveLayout.heightHint = height / 25;
+        retrieveLayout.widthHint = width / 15;
+        retrieve.setLayoutData(retrieveLayout);
     }
 }

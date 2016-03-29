@@ -1,7 +1,12 @@
 package edu.nju.cs.inform.gui;
 
 import edu.nju.cs.inform.core.diff.CodeElementsComparer;
+import edu.nju.cs.inform.core.ir.IRModelConst;
+import edu.nju.cs.inform.core.ir.Retrieval;
+import edu.nju.cs.inform.core.type.ArtifactsCollection;
 import edu.nju.cs.inform.core.type.CodeElementChange;
+import edu.nju.cs.inform.core.type.SimilarityMatrix;
+import edu.nju.cs.inform.io.ArtifactsReader;
 import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
@@ -11,7 +16,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
+import java.util.Map;
 import java.util.Set;
+
+import static edu.nju.cs.inform.gui.Retro.*;
 
 /**
  * Created by Xufy on 2016/3/20.
@@ -33,7 +41,10 @@ public class ProgressDialog extends Dialog{
     protected Control createDialogArea(Composite parent) {
 
         final Composite area = new Composite(parent, SWT.NULL);
-        progress = new ProgressBar(area,SWT.NULL);
+        area.setBounds(LayoutConstants.screenWidth / 2 - LayoutConstants.screenWidth / 30,LayoutConstants.screenHeight / 2 - LayoutConstants.screenHeight / 60,
+                LayoutConstants.screenWidth / 15,LayoutConstants.screenHeight / 30);
+        addProgressBar(area);
+        /*progress = new ProgressBar(area,SWT.NULL);
         progress.setMinimum(0);
         progress.setMaximum(100);
         final GridLayout layout = new GridLayout();
@@ -43,7 +54,7 @@ public class ProgressDialog extends Dialog{
         GridData progressStyle = new GridData();
         progressStyle.widthHint = Retro.screen_width / 10;
         progressStyle.heightHint = Retro.screen_height / 40;
-        progress.setLayoutData(progressStyle);
+        progress.setLayoutData(progressStyle);*/
 
         updateProgress();
 
@@ -58,7 +69,7 @@ public class ProgressDialog extends Dialog{
         new Thread(new Runnable() {
             private int start = 0;
             private int end = 100;
-            private static final int INCREMENT = 10;
+            private static final int INCREMENT = 25;
 
 
             @Override
@@ -99,24 +110,62 @@ public class ProgressDialog extends Dialog{
             public void widgetSelected(SelectionEvent selectionEvent) {
 
                 close();
-                //当点击对话框Finish按钮时，显示TableItem内容
-//                call_new_code_location = "data/sample/AquaLush_Change4";
-//                call_old_code_location = "data/sample/AquaLush_Change3";
-                final CodeElementsComparer comparer = new CodeElementsComparer(Retro.call_new_code_location, Retro.call_old_code_location);
+                CodeElementsComparer comparer = new CodeElementsComparer(call_new_code_location, call_old_code_location);
                 comparer.diff();
-                final Set<CodeElementChange> codeElementChangesList = comparer.getCodeElementChangesList();
-                CodeElementChanges = new TableItem[codeElementChangesList.size()];
-                int i = 0;
-                for(CodeElementChange elementChange : codeElementChangesList){
-                    TableItem item = new TableItem(Retro.codeElementsTable,0);
-                    String[] codeInfo = {"" + ++i,elementChange.getElementName(),"" + elementChange.getElementType(), "" +elementChange.getChangeType()};
-                    item.setText(codeInfo);
-                    CodeElementChanges[i - 1] = item;
+
+                // get change description from code changes
+                ArtifactsCollection changeDescriptionCollection = comparer.getChangeDescriptionCollection();
+                final ArtifactsCollection requirementCollection = ArtifactsReader.getCollections(call_requirement_location, ".txt");
+
+                // retrieval change description to requirement
+                Retrieval retrieval = new Retrieval(changeDescriptionCollection, requirementCollection, IRModelConst.VSM);
+                retrieval.tracing();
+
+
+                SimilarityMatrix similarityMatrix = retrieval.getSimilarityMatrix();
+                Map<String, Double> candidatedOutdatedRequirementsRank = retrieval.getCandidateOutdatedRequirementsRank();
+                int rindex=1;
+                for(Map.Entry<String,Double> map:candidatedOutdatedRequirementsRank.entrySet()){
+                    TableItem item = new TableItem(requirementElementsTable,SWT.NONE);
+                    item.setText(new String[]{String.valueOf(rindex++),String.valueOf(map.getValue()),map.getKey(),"default"});
+                    //System.out.println(map.getKey()+"\t"+map.getValue());
                 }
+                requirementElementsTable.addListener(SWT.MouseDoubleClick,new Listener(){
+
+                    @Override
+                    public void handleEvent(Event event) {
+                        if(event.button==1){
+                            TableItem[] ritemList=requirementElementsTable.getItems();
+                            int lisheHaveChouse=requirementElementsTable.getSelectionIndex();
+                            String idname=ritemList[lisheHaveChouse].getText(2);
+                            Retro.requirementText.setText(requirementCollection.get(idname).text);
+                        }
+                    }
+                });
 
             }
         });
+        GridData buttonStyle = new GridData();
+        buttonStyle.widthHint = LayoutConstants.screenWidth / 20;
+        buttonStyle.heightHint = LayoutConstants.screenHeight / 30;
+        buttonStyle.verticalIndent = LayoutConstants.screenHeight / 60;
+        buttonStyle.horizontalIndent = LayoutConstants.screenWidth / 40;
+        finish.setLayoutData(buttonStyle);
 
+    }
+
+    private void addProgressBar(Composite parent){
+        progress = new ProgressBar(parent,SWT.NULL);
+        progress.setMinimum(0);
+        progress.setMaximum(100);
+        final GridLayout layout = new GridLayout();
+        layout.marginHeight = LayoutConstants.screenHeight / 50;
+        layout.marginWidth = LayoutConstants.screenWidth / 50;
+        parent.setLayout(layout);
+        GridData progressStyle = new GridData();
+        progressStyle.widthHint = LayoutConstants.screenWidth / 10;
+        progressStyle.heightHint = LayoutConstants.screenHeight / 30;
+        progress.setLayoutData(progressStyle);
     }
 
 }
