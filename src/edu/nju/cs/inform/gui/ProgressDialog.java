@@ -4,10 +4,7 @@ import edu.nju.cs.inform.core.diff.CodeElementsComparer;
 import edu.nju.cs.inform.core.ir.IRModelConst;
 import edu.nju.cs.inform.core.ir.Retrieval;
 import edu.nju.cs.inform.core.type.ArtifactsCollection;
-import edu.nju.cs.inform.core.type.CodeElementChange;
-import edu.nju.cs.inform.core.type.SimilarityMatrix;
 import edu.nju.cs.inform.io.ArtifactsReader;
-import org.eclipse.jface.dialogs.*;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -16,8 +13,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 import static edu.nju.cs.inform.gui.Retro.*;
 
@@ -121,14 +118,21 @@ public class ProgressDialog extends Dialog{
                 Retrieval retrieval = new Retrieval(changeDescriptionCollection, requirementCollection, IRModelConst.VSM);
                 retrieval.tracing();
 
-
-                SimilarityMatrix similarityMatrix = retrieval.getSimilarityMatrix();
                 Map<String, Double> candidatedOutdatedRequirementsRank = retrieval.getCandidateOutdatedRequirementsRank();
+                //将map转换成list
+                java.util.List<Map.Entry<String, Double>> list = new ArrayList<>(candidatedOutdatedRequirementsRank.entrySet());
+                Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+                    @Override
+                    //降序排列
+                    public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+                        return o2.getValue().compareTo(o1.getValue());
+                    }
+                });
                 int rindex=1;
-                for(Map.Entry<String,Double> map:candidatedOutdatedRequirementsRank.entrySet()){
+                for(Map.Entry<String,Double> map:list)
+                {
                     TableItem item = new TableItem(requirementElementsTable,SWT.NONE);
                     item.setText(new String[]{String.valueOf(rindex++),String.valueOf(map.getValue()),map.getKey(),"default"});
-                    //System.out.println(map.getKey()+"\t"+map.getValue());
                 }
                 requirementElementsTable.addListener(SWT.MouseDoubleClick,new Listener(){
 

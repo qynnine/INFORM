@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Class-Path: lib/org.eclipse.core.commands_3.6.100.v20140528-1422.jar;l
+ ib/org.eclipse.core.contenttype_3.4.100.v20110423-0524.jar;lib/org.ec
+ lipse.core.jobs_3.5.100.v20110404.jar;lib/org.eclipse.core.resources_
+ 3.7.100.v20110510-0712.jar;lib/org.eclipse.core.runtime_3.7.0.v201101
+ 10.jar;lib/org.eclipse.equinox.common_3.6.0.v20110523.jar;lib/org.ecl
+ ipse.equinox.preferences_3.4.0.v20110502.jar;lib/org.eclipse.jdt.core
+ _3.7.0.v_B61.jar;lib/org.eclipse.jface-3.6.0.jar;lib/org.eclipse.osgi
+ _3.7.0.v20110613.jar;lib/org.eclipse.text_3.5.100.v20110505-0800.jar;
+ lib/org.eclipse.ui_3.7.0.I20110602-0100.jar;lib/swt.jar;lib/zip4j_1.3
+ .2.jar
+Main-Class: edu.nju.cs.inform.console.inform_main
+

@@ -265,7 +265,7 @@ public class Retro {
                 DirectoryDialog fileFolder = new DirectoryDialog(entrance,
                         SWT.SAVE);
                 try {
-                    fileFolder.setText("Select old version location");
+                    fileFolder.setText("Select new version location");
                     fileFolder.setFilterPath(prevPath);
                     call_new_code_location = fileFolder.open();
                     text.setText(call_new_code_location);
