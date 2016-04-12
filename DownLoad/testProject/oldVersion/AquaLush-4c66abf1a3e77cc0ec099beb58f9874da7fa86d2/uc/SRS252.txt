@@ -1,1 +1,0 @@
-set time action set irrig time screen button press 

@@ -1,1 +1,0 @@
-set moistur level state user alter zone critic moistur level 

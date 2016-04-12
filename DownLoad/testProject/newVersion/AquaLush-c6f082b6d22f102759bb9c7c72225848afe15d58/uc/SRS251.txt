@@ -1,1 +1,0 @@
-set automat irrig action set automat irrig screen button press 
