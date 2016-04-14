@@ -1,12 +1,14 @@
 package edu.nju.cs.inform.core.diff;
 
+import edu.nju.cs.inform.core.preprocess.ArtifactPreprocessor;
 import edu.nju.cs.inform.core.type.*;
+import edu.nju.cs.inform.core.group.ChangeRegionAlgorithm;
 import edu.nju.cs.inform.io.ArtifactsReader;
+import edu.nju.cs.inform.io.ChangedArtifacts;
+import edu.nju.cs.inform.core.relation.RelationInfo;
 import edu.nju.cs.inform.util.JavaElement;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by niejia on 16/3/15.
@@ -18,18 +20,35 @@ public class CodeElementsComparer {
     private SourceCodeElements newVersionCodeElements;
     private SourceCodeElements oldVersionCodeElements;
 
+//    codeElementChangesList contains the whole code changes. It will be filtered, and then has the same result just like JDiff.
     private Set<CodeElementChange> codeElementChangesList;
 
+    private Set<CodeElementChange> methodFieldsChangesList;
+
     private ArtifactsCollection changeDescriptionCollection;
+    private RelationInfo relationInfo;
+
+    private ArtifactsCollection preprocessedNewVersionCodeCollection;
+    private Map<String, Set<String>> elementsInGroup;
+
+
+    private String newVersionCodeDirPath;
+    private String oldVersionCodeDirPath;
 
     public CodeElementsComparer(String newVersionCodeDirPath, String oldVersionCodeDirPath) {
         ArtifactsCollection newVersionCodeCollection = ArtifactsReader.getCollections(newVersionCodeDirPath, postfixName);
         ArtifactsCollection oldVersionCodeCollection = ArtifactsReader.getCollections(oldVersionCodeDirPath, postfixName);
 
+        setPreprocessedNewVersionCodeCollection(newVersionCodeCollection);
+
         this.newVersionCodeElements = new SourceCodeElements(newVersionCodeCollection);
         this.oldVersionCodeElements = new SourceCodeElements(oldVersionCodeCollection);
         this.codeElementChangesList = new LinkedHashSet<>();
+        this.methodFieldsChangesList = new LinkedHashSet<>();
         this.changeDescriptionCollection = new ArtifactsCollection();
+        this.elementsInGroup = new LinkedHashMap<>();
+        this.newVersionCodeDirPath = newVersionCodeDirPath;
+        this.oldVersionCodeDirPath = oldVersionCodeDirPath;
     }
 
     public void diff() {
@@ -38,9 +57,21 @@ public class CodeElementsComparer {
         identifyChanges(newVersionCodeElements.getMethodsList(), oldVersionCodeElements.getMethodsList(), ElementType.Method);
         identifyChanges(newVersionCodeElements.getFieldsList(), oldVersionCodeElements.getFieldsList(), ElementType.Field);
 
+        findMethodFieldChanges();
         // filter the level duplication
         filterOn();
-        extractChangeDescription();
+//        extractChangeDescription();
+
+        ChangeRegionAlgorithm algorithm = new ChangeRegionAlgorithm(this);
+    }
+
+    private void findMethodFieldChanges() {
+        for (CodeElementChange change : codeElementChangesList) {
+            if (change.getElementType().equals(ElementType.Method) ||
+                    change.getElementType().equals(ElementType.Field)) {
+                methodFieldsChangesList.add(change);
+            }
+        }
     }
 
     private void filterOn() {
@@ -89,6 +120,13 @@ public class CodeElementsComparer {
         for (CodeElementChange elementChange : codeElementChangesList) {
             Artifact artifact = new Artifact(elementChange.getElementName(), elementChange.getElementName());
             changeDescriptionCollection.put(elementChange.getElementName(), artifact);
+        }
+    }
+
+    public void setChangeDescriptions(Map<String, String> changeDescription) {
+        for (String groupID : changeDescription.keySet()) {
+            Artifact artifact = new Artifact(groupID, changeDescription.get(groupID));
+            changeDescriptionCollection.put(groupID, artifact);
         }
     }
 
@@ -142,7 +180,76 @@ public class CodeElementsComparer {
         return codeElementChangesList;
     }
 
+    public Set<CodeElementChange> getMethodFieldsChangesList() {
+        return methodFieldsChangesList;
+    }
+
     public ArtifactsCollection getChangeDescriptionCollection() {
         return changeDescriptionCollection;
+    }
+
+    public ChangedArtifacts getChangedArtifacts() {
+        ChangedArtifacts parser = new ChangedArtifacts();
+        parser.parse(this);
+        return parser;
+    }
+
+    public SourceCodeElements getNewVersionCodeElements() {
+        return newVersionCodeElements;
+    }
+
+    public SourceCodeElements getOldVersionCodeElements() {
+        return oldVersionCodeElements;
+    }
+
+    public void setChangedCodeElementsRelationInfo(RelationInfo relationInfo) {
+        this.relationInfo = relationInfo;
+    }
+
+    public RelationInfo getChangedCodeElementsRelationInfo() {
+        return relationInfo;
+    }
+
+    public ArtifactsCollection getPreprocessedNewVersionCodeCollection() {
+        return preprocessedNewVersionCodeCollection;
+    }
+
+    public void setPreprocessedNewVersionCodeCollection(ArtifactsCollection codeCollection) {
+        preprocessedNewVersionCodeCollection = new ArtifactsCollection();
+        for (String id : codeCollection.keySet()) {
+            Artifact artifact = new Artifact(id, ArtifactPreprocessor.handleJavaFile(codeCollection.get(id).text));
+            preprocessedNewVersionCodeCollection.put(id, artifact);
+        }
+    }
+
+    public ArtifactsCollection getChangedMethodsCollection() {
+        ArtifactsCollection changedMethods = new ArtifactsCollection();
+        for (CodeElementChange elementChange : methodFieldsChangesList) {
+            if (elementChange.getElementType().equals(ElementType.Method)) {
+                Artifact artifact = new Artifact(elementChange.getElementName(), ArtifactPreprocessor.handleJavaFile(elementChange.getElementName()));
+                changedMethods.put(elementChange.getElementName(), artifact);
+            }
+        }
+        return changedMethods;
+    }
+
+    public void setElementsInGroup(Map<String, Set<String>> elementsInGroup) {
+        this.elementsInGroup = elementsInGroup;
+    }
+
+    public Map<String, Set<String>> getElementsInGroupList() {
+        return elementsInGroup;
+    }
+
+    public Set<String> getElementsInGroup(String group) {
+        return elementsInGroup.get(group);
+    }
+
+    public String getNewVersionCodeDirPath() {
+        return newVersionCodeDirPath;
+    }
+
+    public String getOldVersionCodeDirPath() {
+        return oldVersionCodeDirPath;
     }
 }

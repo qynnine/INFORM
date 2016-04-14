@@ -1,5 +1,6 @@
 package edu.nju.cs.inform.core.ir;
 
+import edu.nju.cs.inform.core.diff.CodeElementsComparer;
 import edu.nju.cs.inform.core.preprocess.ArtifactPreprocessor;
 import edu.nju.cs.inform.core.type.*;
 import edu.nju.cs.inform.util._;
@@ -20,10 +21,19 @@ public class Retrieval {
     private Map<String, Double> candidateOutdatedRequirementsRank;
 
     public Retrieval(ArtifactsCollection sourceCollection, ArtifactsCollection targetCollection, String modelType) {
-        this.sourceCollection = sourceCollection;
-        this.targetCollection = targetCollection;
+        this.sourceCollection = deepCopy(sourceCollection);
+        this.targetCollection = deepCopy(targetCollection);
         this.modelType = modelType;
         this.candidateOutdatedRequirementsRank = new LinkedHashMap<>();
+    }
+
+    public Retrieval(CodeElementsComparer codeElementsComparer, ArtifactsCollection targetCollection, String modelType) {
+        this.sourceCollection = deepCopy(codeElementsComparer.getChangeDescriptionCollection());
+        this.targetCollection = deepCopy(targetCollection);
+        this.modelType = modelType;
+        this.candidateOutdatedRequirementsRank = new LinkedHashMap<>();
+
+
     }
 
     public void tracing() {
@@ -76,5 +86,14 @@ public class Retrieval {
 
     public SimilarityMatrix getSimilarityMatrix() {
         return sm;
+    }
+
+    private ArtifactsCollection deepCopy(ArtifactsCollection originCollection) {
+        ArtifactsCollection collections = new ArtifactsCollection();
+        for (String id : originCollection.keySet()) {
+            Artifact artifact = new Artifact(id, originCollection.get(id).text);
+            collections.put(id, artifact);
+        }
+        return collections;
     }
 }

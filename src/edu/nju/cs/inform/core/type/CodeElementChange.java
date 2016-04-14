@@ -9,6 +9,8 @@ public class CodeElementChange {
     private ElementType elementType;
     private ChangeType changeType;
 
+    private String keywords;
+
     public CodeElementChange(String elementName, ElementType elementType, ChangeType changeType) {
         this.elementName = elementName;
         this.elementType = elementType;

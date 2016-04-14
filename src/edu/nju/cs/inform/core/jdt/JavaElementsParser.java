@@ -57,7 +57,8 @@ public class JavaElementsParser {
 
             className = typeDec.getName().toString();
             sourceCodeElements.addClass(packageName + "." + className);
-
+//            System.out.println(" packageName + className = " + packageName + "." + className );
+//            sourceCodeElements.addClass(className);
 
             if (typeDec.getJavadoc() != null) {
 
@@ -65,6 +66,8 @@ public class JavaElementsParser {
             } else {
                 classDoc = "";
             }
+
+            sourceCodeElements.addClassComments(packageName + "." + className, classDoc);
 
             parseClass();
         } else {
@@ -126,16 +129,26 @@ public class JavaElementsParser {
             sb.append(field.getFieldName());
             sb.append(" ");
             sourceCodeElements.addField(packageName + "." + className + "." + field.getFieldName());
+//            sourceCodeElements.addField(className + "." + field.getFieldName());
         }
 
         for (JMethod method : jMethodList) {
             sb.append(method.getMethodName());
             sb.append(" ");
+
+            StringBuffer parameters = new StringBuffer();
             for (String p : method.getParaNameList()) {
                 sb.append(p);
                 sb.append(" ");
+                parameters.append(p);
+                parameters.append(" ");
             }
-            sourceCodeElements.addMethod(packageName + "." + className + "." + method.getMethodName());
+//            sourceCodeElements.addMethod(packageName + "." + className + "." + method.getMethodName());
+//            System.out.println(" packageName  + className + method.getMethodName() = " + packageName + "." + className + "." + method.getMethodName() );
+            sourceCodeElements.addMethod(method.getMethodName());
+            sourceCodeElements.addMethodBody(method.getMethodName(),method.getMethodBody());
+            sourceCodeElements.addMethodComments(method.getMethodName(), method.getDoc());
+            sourceCodeElements.addMethodParameters(method.getMethodName(), parameters.toString());
         }
 
         sb.append("\n");
