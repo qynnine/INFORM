@@ -1,4 +1,4 @@
-package edu.nju.cs.inform.test.core.ir;
+package edu.nju.cs.inform.test.core.recommend;
 
 import edu.nju.cs.inform.core.diff.CodeElementsComparer;
 import edu.nju.cs.inform.core.ir.IRModelConst;
@@ -6,11 +6,13 @@ import edu.nju.cs.inform.core.ir.Retrieval;
 import edu.nju.cs.inform.core.type.ArtifactsCollection;
 import edu.nju.cs.inform.core.type.SimilarityMatrix;
 import edu.nju.cs.inform.io.ArtifactsReader;
+import edu.nju.cs.inform.core.recommend.MethodRecommendation;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
-public class RetrievalTest {
+public class MethodRecommendationTest {
 
     @Test
     public void testTracing() throws Exception {
@@ -27,17 +29,24 @@ public class RetrievalTest {
 
         // retrieval change description to requirement
         Retrieval retrieval = new Retrieval(changeDescriptionCollection, requirementCollection, IRModelConst.VSM);
-//        Retrieval retrieval = new Retrieval(comparer, requirementCollection, IRModelConst.VSM);
         retrieval.tracing();
-
 
         SimilarityMatrix similarityMatrix = retrieval.getSimilarityMatrix();
         Map<String, Double> candidatedOutdatedRequirementsRank = retrieval.getCandidateOutdatedRequirementsRank();
 
         System.out.println(similarityMatrix );
-        /*for(Map.Entry<String,Double> map:candidatedOutdatedRequirementsRank.entrySet()){
-            System.out.println(map.getKey()+"\t"+map.getValue());
-        }*/
         System.out.println(candidatedOutdatedRequirementsRank);
+
+        MethodRecommendation methodRecommendation = new MethodRecommendation(comparer, requirementCollection, similarityMatrix);
+        Map<String, List<String>> recommendMethodsForRequirements = methodRecommendation.getRecommendMethodsForRequirements();
+
+        // show method recommendation
+        for (String req : recommendMethodsForRequirements.keySet()) {
+            System.out.println(req);
+            List<String> recommendList = recommendMethodsForRequirements.get(req);
+            for (String method : recommendList) {
+                System.out.println(method);
+            }
+        }
     }
 }
