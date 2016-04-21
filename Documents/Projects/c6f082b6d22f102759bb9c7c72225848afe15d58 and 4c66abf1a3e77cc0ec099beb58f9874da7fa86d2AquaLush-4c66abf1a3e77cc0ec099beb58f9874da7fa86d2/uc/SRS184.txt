@@ -1,1 +1,0 @@
-default irrig day set monday tuesday wednesday thursday friday saturday sunday everi day 

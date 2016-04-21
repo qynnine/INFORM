@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact name="INFORM:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/INFORM_jar</output-path>
+    <root id="root">
+      <element id="archive" name="INFORM.jar">
+        <element id="module-output" name="INFORM" />
+      </element>
+      <element id="library" level="module" name="JUnit4" module-name="INFORM" />
+      <element id="library" level="project" name="zip4j_1.3.2" />
+    </root>
+  </artifact>
+</component>

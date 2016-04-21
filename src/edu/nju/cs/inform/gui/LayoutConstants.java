@@ -15,5 +15,9 @@ public class LayoutConstants {
     final static int retroMinSizeHeight = LayoutConstants.screenHeight * 5 / 6;
     final static int retroMinSizeWidth = LayoutConstants.screenWidth * 3 / 4;
 
+    //codeElementsTable
+    final static int everyWidth = LayoutConstants.screenWidth / 2 - LayoutConstants.screenWidth / 25;
+
     final static String iconLocation = "resources\\icons\\icon_small.gif";
+
 }

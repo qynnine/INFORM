@@ -1,1 +1,0 @@
-default simul speed real time 

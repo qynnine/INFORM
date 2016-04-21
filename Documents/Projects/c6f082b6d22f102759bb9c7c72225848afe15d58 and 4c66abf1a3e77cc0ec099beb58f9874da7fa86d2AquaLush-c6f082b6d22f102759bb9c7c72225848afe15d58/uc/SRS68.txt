@@ -1,1 +1,0 @@
-sensor read tri manual mode oper aqualush alert user sensor fail 

@@ -19,8 +19,8 @@ public class FileUnzip {
     }
 
     public static void main(String[] args) {
-        String file = "data/demo/master.zip";
-        String outputPath = "data/output/";
+        String file = "/Users/Che/Documents/Projects/c6f082b6d22f102759bb9c7c72225848afe15d58 and 4c66abf1a3e77cc0ec099beb58f9874da7fa86d2/c6f082b6d22f102759bb9c7c72225848afe15d58.zip";
+        String outputPath = "/Users/Che/Documents/Projects/c6f082b6d22f102759bb9c7c72225848afe15d58 and 4c66abf1a3e77cc0ec099beb58f9874da7fa86d2/";
 
         FileUnzip.extract(file, outputPath);
     }

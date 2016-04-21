@@ -1,1 +1,0 @@
-includ monochrom screen display line ascii charact 

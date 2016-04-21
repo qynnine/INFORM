@@ -1,1 +1,0 @@
-set auto irrig state user con gure automat moistur control irrig 

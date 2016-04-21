@@ -1,1 +1,0 @@
-fail devic sensor display show sensor identi sensor zone sensor locat string 

@@ -1,1 +1,0 @@
-locat eld display zone locat string left align column 

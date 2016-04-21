@@ -1,1 +1,0 @@
-irrig zone locat string charact angl bracket 

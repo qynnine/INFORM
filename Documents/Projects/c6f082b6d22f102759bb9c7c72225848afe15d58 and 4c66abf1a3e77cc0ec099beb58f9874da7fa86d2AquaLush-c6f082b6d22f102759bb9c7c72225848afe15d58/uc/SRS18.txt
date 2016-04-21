@@ -1,1 +1,0 @@
-current time set irrig time skip aqualush wait irrig time word aqualush attempt detect react irrig time skip result time set 
