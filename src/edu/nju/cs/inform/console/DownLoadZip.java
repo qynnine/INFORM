@@ -29,9 +29,9 @@ public class DownLoadZip {
                 bytesum += byteread;
                 fs.write(buffer, 0, byteread);
             }
-            System.out.println(fileName+"文件下载成功.....");
+            System.out.println("Fetch commit "+fileName+" from remote...");
         } catch (Exception e) {
-            System.out.println("下载异常"+e);
+            System.out.println("Download Error: "+e);
             return "false";
         } finally{
             try {

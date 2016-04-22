@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream;
 /**
  * Created by neo on 16/4/10.
  */
-public class zipDecompressing {
+public class ZipDecompressing {
     @SuppressWarnings("unchecked")
     public static ArrayList Ectract(String sZipPathFile, String sDestPath) {
         ArrayList<String> allFileName = new ArrayList<String>();
@@ -32,7 +32,7 @@ public class zipDecompressing {
                         fpath.mkdirs();
                     FileOutputStream fouts = new FileOutputStream(zfile);
                     int i;
-                    allFileName.add(fpath.getAbsolutePath());
+                    allFileName.add(zfile.getAbsolutePath());
                     while ((i = zins.read(ch)) != -1)
                         fouts.write(ch, 0, i);
                     zins.closeEntry();
