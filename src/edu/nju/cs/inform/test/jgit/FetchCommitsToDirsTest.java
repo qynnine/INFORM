@@ -9,8 +9,8 @@ public class FetchCommitsToDirsTest {
     @Test
     public void testContentInCommit() throws Exception {
 
-        String gitProjectPath = "/Users/niejia/Documents/Idea15/AquaLush/.git";
-        String exportPath = "data/test/";
+        String gitProjectPath = "data/sample/AquaLush/.git";
+        String exportPath = "data/project/";
 
         FetchCommitsToDirs fetchCommitsToDirs = new FetchCommitsToDirs(gitProjectPath, exportPath);
     }

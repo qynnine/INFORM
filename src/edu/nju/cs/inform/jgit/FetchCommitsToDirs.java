@@ -22,6 +22,8 @@ public class FetchCommitsToDirs {
 
         AppConfigure.gitProjectPath = gitProjectPath;
 
+        File gitProjectFile = new File(gitProjectPath);
+        String projectName = gitProjectFile.getParentFile().getName();
         String dir = exportDirPath;
 
         try (Repository repository = CookbookHelper.openJGitCookbookRepository()) {
@@ -41,7 +43,7 @@ public class FetchCommitsToDirs {
 //                        RevCommit commit = walk.parseCommit(head.getObjectId());
                         System.out.println("Commit: " + commit.getName() + " " + commit.getAuthorIdent() + " " + commit.getCommitTime());
 
-                        String commitDir = dir + "commit_" + commit.getName() + "_" + commit.getCommitTime() + "_" + commit.getAuthorIdent().getName() + "/";
+                        String commitDir = dir + "/" + projectName + "/" + "commit_" + commit.getName() + "_" + commit.getCommitTime() + "_" + commit.getAuthorIdent().getName() + "/";
 
                         // Unix timestamp to dataTime
 //                        Date time = new java.util.Date((long) commit.getCommitTime() * 1000);
@@ -65,7 +67,7 @@ public class FetchCommitsToDirs {
                                 File file = new File(commitDir + treeWalk.getPathString());
                                 File dirFile = new File(file.getParentFile().getPath());
 
-                                System.out.println(dirFile.getAbsolutePath());
+//                                System.out.println(dirFile.getAbsolutePath());
 
                                 if (!dirFile.exists()) {
                                     dirFile.mkdirs();
@@ -83,8 +85,6 @@ public class FetchCommitsToDirs {
 
                     count++;
                 }
-
-                System.out.println(count);
             }
         }
     }
